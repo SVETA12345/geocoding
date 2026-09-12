@@ -1,8 +1,8 @@
-import { createRequire } from "node:module";
+import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-require("dotenv").config();
+require('dotenv').config();
 const DEFAULT_TIMEOUT = parseInt(process.env.TIMEOUT, 10);
 const GEOCODING_API_URL = process.env.GEOCODING_API_URL;
 const WEATHER_API_URL = process.env.WEATHER_API_URL;
@@ -22,15 +22,15 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
   } catch (error) {
     clearTimeout(timeoutId);
 
-    if (error.name === "AbortError") {
+    if (error.name === 'AbortError') {
       throw new Error(`Превышен таймаут запроса (${timeout} мс)`);
     }
 
     if (
-      error.cause?.code === "ENOTFOUND" ||
-      error.cause?.code === "ECONNREFUSED"
+      error.cause?.code === 'ENOTFOUND' ||
+      error.cause?.code === 'ECONNREFUSED'
     ) {
-      throw new Error("Отсутствует подключение к сети");
+      throw new Error('Отсутствует подключение к сети');
     }
 
     throw error;
@@ -39,10 +39,10 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
 
 export async function geocodeCity(city) {
   const url = new URL(GEOCODING_API_URL);
-  url.searchParams.append("name", city);
-  url.searchParams.append("count", "1");
-  url.searchParams.append("language", "ru");
-  url.searchParams.append("format", "json");
+  url.searchParams.append('name', city);
+  url.searchParams.append('count', '1');
+  url.searchParams.append('language', 'ru');
+  url.searchParams.append('format', 'json');
 
   let response;
   try {
@@ -67,7 +67,7 @@ export async function geocodeCity(city) {
   try {
     data = await response.json();
   } catch (error) {
-    throw new Error("Некорректный JSON от сервера геокодинга");
+    throw new Error('Некорректный JSON от сервера геокодинга');
   }
 
   if (!data.results || data.results.length === 0) {
@@ -77,7 +77,7 @@ export async function geocodeCity(city) {
   const result = data.results[0];
   return {
     name: result.name,
-    country: result.country || "Неизвестная страна",
+    country: result.country || 'Неизвестная страна',
     latitude: result.latitude,
     longitude: result.longitude,
   };
@@ -85,14 +85,14 @@ export async function geocodeCity(city) {
 
 export async function getWeatherForecast(lat, lon, days) {
   const url = new URL(WEATHER_API_URL);
-  url.searchParams.append("latitude", lat.toString());
-  url.searchParams.append("longitude", lon.toString());
+  url.searchParams.append('latitude', lat.toString());
+  url.searchParams.append('longitude', lon.toString());
   url.searchParams.append(
-    "daily",
-    "temperature_2m_max,temperature_2m_min,precipitation_sum",
+    'daily',
+    'temperature_2m_max,temperature_2m_min,precipitation_sum',
   );
-  url.searchParams.append("forecast_days", days.toString());
-  url.searchParams.append("timezone", "auto");
+  url.searchParams.append('forecast_days', days.toString());
+  url.searchParams.append('timezone', 'auto');
 
   let response;
   try {
@@ -117,12 +117,12 @@ export async function getWeatherForecast(lat, lon, days) {
   try {
     data = await response.json();
   } catch (error) {
-    throw new Error("Некорректный JSON от сервера прогноза");
+    throw new Error('Некорректный JSON от сервера прогноза');
   }
 
   if (!data.daily || !data.daily.time || !data.daily.time.length) {
     throw new Error(
-      "Некорректные данные прогноза: отсутствуют ежедневные данные",
+      'Некорректные данные прогноза: отсутствуют ежедневные данные',
     );
   }
 
