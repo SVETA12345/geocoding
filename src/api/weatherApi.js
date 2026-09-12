@@ -1,6 +1,10 @@
 
+import { createRequire } from 'node:module';
 
-const DEFAULT_TIMEOUT = parseInt(process.env.REQUEST_TIMEOUT, 10);
+const require = createRequire(import.meta.url);
+
+require('dotenv').config();
+const DEFAULT_TIMEOUT = parseInt(process.env.TIMEOUT, 10);
 const GEOCODING_API_URL = process.env.GEOCODING_API_URL;
 const WEATHER_API_URL = process.env.WEATHER_API_URL;
 
@@ -35,11 +39,12 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
 
 export async function geocodeCity(city) {
   const url = new URL(GEOCODING_API_URL);
+  console.log('url', url)
   url.searchParams.append('name', city);
   url.searchParams.append('count', '1');
   url.searchParams.append('language', 'ru');
   url.searchParams.append('format', 'json');
-
+    
   let response;
   try {
     response = await fetchWithTimeout(url.toString());

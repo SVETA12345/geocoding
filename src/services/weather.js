@@ -6,12 +6,10 @@ async function getCityWeather(city, days, noCache) {
   if (!noCache && (await isReportCacheValid(city))) {
     const cached = await getCachedReport(city);
     if (cached) {
-      return cached;
+      if (cached.forecast.length >= days) return cached;
     }
   }
-
   const location = await geocodeCity(city);
-
   const forecast = await getWeatherForecast(location.latitude, location.longitude, days);
 
   return {

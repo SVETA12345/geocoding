@@ -1,4 +1,7 @@
 import { parseArgs } from 'node:util';
+import { getWeatherDigest } from './services/weather.js';
+import { formatConsoleOutput } from './format/output.js'
+import { saveReport } from './storage/cache.js'
 
 function parseCommandLine() {
   const options = {
@@ -77,7 +80,7 @@ async function main() {
     let hasErrors = false;
     for (const result of results) {
       if (result.status === 'fulfilled') {
-        console.log(formatConsoleOutput(result.value));
+        console.log(formatConsoleOutput({ ...result.value, 'forecast': result.value.forecast.slice(0, days) }));
         await saveReport(result.value);
       } else {
         hasErrors = true;

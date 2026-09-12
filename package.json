@@ -9,11 +9,19 @@
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js"
   },
-  "keywords": ["weather", "cli", "open-meteo", "nodejs"],
+  "keywords": [
+    "weather",
+    "cli",
+    "open-meteo",
+    "nodejs"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^8.57.0",
     "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }
