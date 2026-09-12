@@ -1,6 +1,6 @@
 import { test, describe, mock, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { geocodeCity, getWeatherForecast } from '../src/api/client.js';
+import { geocodeCity, getWeatherForecast } from '../src/api/weatherApi.js';
 
 describe('geocodeCity', () => {
     let originalFetch;

@@ -1,25 +1,25 @@
-import { parseArgs } from "node:util";
-import { getWeatherDigest } from "./services/weather.js";
-import { formatConsoleOutput } from "./format/output.js";
-import { saveReport } from "./storage/cache.js";
+import { parseArgs } from 'node:util';
+import { getWeatherDigest } from './services/weather.js';
+import { formatConsoleOutput } from './format/output.js';
+import { saveReport } from './storage/cache.js';
 
 function parseCommandLine() {
   const options = {
     city: {
-      type: "string",
-      short: "c",
+      type: 'string',
+      short: 'c',
     },
     days: {
-      type: "string",
-      short: "d",
+      type: 'string',
+      short: 'd',
     },
-    "no-cache": {
-      type: "boolean",
-      short: "n",
+    'no-cache': {
+      type: 'boolean',
+      short: 'n',
     },
     help: {
-      type: "boolean",
-      short: "h",
+      type: 'boolean',
+      short: 'h',
     },
   };
 
@@ -32,16 +32,16 @@ function parseCommandLine() {
     });
 
     if (!values.city) {
-      console.error(" Ошибка: параметр --city обязателен");
+      console.error(' Ошибка: параметр --city обязателен');
       process.exit(1);
     }
 
     const cities = values.city
-      .split(",")
+      .split(',')
       .map((c) => c.trim())
       .filter((c) => c.length > 0);
     if (cities.length === 0) {
-      console.error("Ошибка: не указан ни один город");
+      console.error('Ошибка: не указан ни один город');
       process.exit(1);
     }
 
@@ -49,7 +49,7 @@ function parseCommandLine() {
     if (values.days) {
       days = parseInt(values.days, 10);
       if (isNaN(days) || days < 1 || days > 7) {
-        console.error(" Ошибка: параметр --days должен быть числом от 1 до 7");
+        console.error(' Ошибка: параметр --days должен быть числом от 1 до 7');
         process.exit(1);
       }
     }
@@ -57,11 +57,11 @@ function parseCommandLine() {
     return {
       cities,
       days,
-      noCache: values["no-cache"] || false,
+      noCache: values['no-cache'] || false,
     };
   } catch (error) {
-    console.error("Ошибка разбора аргументов:", error.message);
-    console.error("Используйте --help для справки");
+    console.error('Ошибка разбора аргументов:', error.message);
+    console.error('Используйте --help для справки');
     process.exit(1);
   }
 }
@@ -70,12 +70,12 @@ async function main() {
   try {
     const { cities, days, noCache } = parseCommandLine();
 
-    console.log(`Получение прогноза для: ${cities.join(", ")}`);
+    console.log(`Получение прогноза для: ${cities.join(', ')}`);
     console.log(`Количество дней: ${days}`);
     const results = await getWeatherDigest(cities, days, noCache);
     let hasErrors = false;
     for (const result of results) {
-      if (result.status === "fulfilled") {
+      if (result.status === 'fulfilled') {
         console.log(
           formatConsoleOutput({
             ...result.value,
