@@ -1,0 +1,127 @@
+{
+  "info": {
+    "name": "Weather Digest API",
+    "description": "Коллекция запросов к Open-Meteo API для утилиты Погодный дайджест",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.open-meteo.com/v1"
+    },
+    {
+      "key": "geocodingUrl",
+      "value": "https://geocoding-api.open-meteo.com/v1/search"
+    },
+    {
+      "key": "city",
+      "value": "Москва"
+    },
+    {
+      "key": "latitude",
+      "value": "55.7558"
+    },
+    {
+      "key": "longitude",
+      "value": "37.6173"
+    },
+    {
+      "key": "days",
+      "value": "3"
+    }
+  ],
+  "item": [
+    {
+      "name": "Геокодинг города",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{geocodingUrl}}?name={{city}}&count=1&language=ru&format=json",
+          "host": ["{{geocodingUrl}}"],
+          "query": [
+            {
+              "key": "name",
+              "value": "{{city}}"
+            },
+            {
+              "key": "count",
+              "value": "1"
+            },
+            {
+              "key": "language",
+              "value": "ru"
+            },
+            {
+              "key": "format",
+              "value": "json"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Успешный ответ",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"results\": [\n    {\n      \"id\": 524901,\n      \"name\": \"Москва\",\n      \"latitude\": 55.7558,\n      \"longitude\": 37.6173,\n      \"country\": \"Россия\"\n    }\n  ]\n}"
+        },
+        {
+          "name": "Город не найден",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"results\": []\n}"
+        }
+      ]
+    },
+    {
+      "name": "Прогноз погоды",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/forecast?latitude={{latitude}}&longitude={{longitude}}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&forecast_days={{days}}&timezone=auto",
+          "host": ["{{baseUrl}}"],
+          "path": ["forecast"],
+          "query": [
+            {
+              "key": "latitude",
+              "value": "{{latitude}}"
+            },
+            {
+              "key": "longitude",
+              "value": "{{longitude}}"
+            },
+            {
+              "key": "daily",
+              "value": "temperature_2m_max,temperature_2m_min,precipitation_sum"
+            },
+            {
+              "key": "forecast_days",
+              "value": "{{days}}"
+            },
+            {
+              "key": "timezone",
+              "value": "auto"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Успешный ответ",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"daily\": {\n    \"time\": [\"2026-09-08\", \"2026-09-09\", \"2026-09-10\"],\n    \"temperature_2m_max\": [18.5, 20.1, 17.2],\n    \"temperature_2m_min\": [10.2, 11.5, 9.8],\n    \"precipitation_sum\": [0.0, 2.3, 5.1]\n  }\n}"
+        },
+        {
+          "name": "Ошибка - некорректные параметры",
+          "status": "Bad Request",
+          "code": 400,
+          "body": "{\n  \"error\": true,\n  \"reason\": \"Invalid parameter: latitude must be a number\"\n}"
+        }
+      ]
+    }
+  ]
+}

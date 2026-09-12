@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌤️ Погодный дайджест — просмотр отчёта</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f7fafc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e6f0ff;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: #a0aec0;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.visible {
+            display: block;
+        }
+
+        .report {
+            display: none;
+        }
+
+        .report.visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .city-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .city-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .country {
+            font-size: 16px;
+            color: #718096;
+            font-weight: 400;
+            margin-left: 8px;
+        }
+
+        .coords {
+            font-size: 14px;
+            color: #718096;
+            background: #edf2f7;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .cache-badge {
+            font-size: 12px;
+            background: #bee3f8;
+            color: #2c5282;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: #667eea;
+            color: #fff;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 15px;
+        }
+
+        tbody tr:hover {
+            background: #f7fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .temp-min {
+            color: #3182ce;
+            font-weight: 600;
+        }
+
+        .temp-max {
+            color: #dd6b20;
+            font-weight: 600;
+        }
+
+        .precip {
+            color: #2f855a;
+            font-weight: 600;
+        }
+
+        .precip.zero {
+            color: #a0aec0;
+            font-weight: 400;
+        }
+
+        .actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Погодный дайджест</h1>
+        <p class="subtitle">Загрузите JSON-отчёт из папки <code>reports/</code>, чтобы просмотреть прогноз</p>
+
+        <label class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept=".json,application/json">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Нажмите или перетащите JSON-файл сюда</div>
+            <div class="upload-hint">Файл вида: Москва-2026-09-12.json</div>
+        </label>
+
+        <div class="error" id="error"></div>
+
+        <div class="report" id="report">
+            <div class="city-header">
+                <div>
+                    <span class="city-name" id="cityName"></span>
+                    <span class="country" id="country"></span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="coords" id="coords"></span>
+                    <span class="cache-badge" id="cacheBadge" style="display: none;">📦 из кэша</span>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Мин. температура</th>
+                        <th>Макс. температура</th>
+                        <th>Осадки, мм</th>
+                    </tr>
+                </thead>
+                <tbody id="forecastBody"></tbody>
+            </table>
+
+            <div class="actions">
+                <button class="btn-primary" id="loadAnother">📂 Загрузить другой файл</button>
+                <button class="btn-secondary" id="downloadJson">💾 Скачать JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const reportEl = document.getElementById('report');
+        const errorEl = document.getElementById('error');
+        const cityNameEl = document.getElementById('cityName');
+        const countryEl = document.getElementById('country');
+        const coordsEl = document.getElementById('coords');
+        const cacheBadgeEl = document.getElementById('cacheBadge');
+        const forecastBodyEl = document.getElementById('forecastBody');
+        const loadAnotherBtn = document.getElementById('loadAnother');
+        const downloadJsonBtn = document.getElementById('downloadJson');
+
+        let currentReport = null;
+
+        async function handleFile(file) {
+            if (!file) return;
+
+            if (!file.name.endsWith('.json')) {
+                showError('Пожалуйста, выберите файл с расширением .json');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                validateReport(data);
+                renderReport(data);
+                hideError();
+            } catch (error) {
+                if (error instanceof SyntaxError) {
+                    showError(`Ошибка разбора JSON: ${error.message}`);
+                } else {
+                    showError(error.message);
+                }
+            }
+        }
+
+        function validateReport(data) {
+            if (!data || typeof data !== 'object') {
+                throw new Error('Файл не содержит объект JSON');
+            }
+            if (!data.city) {
+                throw new Error('В файле отсутствует поле "city"');
+            }
+            if (!Array.isArray(data.forecast) || data.forecast.length === 0) {
+                throw new Error('В файле отсутствует массив "forecast" или он пуст');
+            }
+        }
+
+        function renderReport(data) {
+            currentReport = data;
+
+            cityNameEl.textContent = data.city || 'Неизвестный город';
+            countryEl.textContent = data.country ? `(${data.country})` : '';
+
+            if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+                coordsEl.textContent = `📍 ${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`;
+                coordsEl.style.display = 'inline-block';
+            } else {
+                coordsEl.style.display = 'none';
+            }
+
+            if (data.cacheHit) {
+                cacheBadgeEl.style.display = 'inline-block';
+            } else {
+                cacheBadgeEl.style.display = 'none';
+            }
+
+            forecastBodyEl.innerHTML = '';
+
+            for (const day of data.forecast) {
+                const row = document.createElement('tr');
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(day.date);
+                row.appendChild(dateCell);
+
+                const minCell = document.createElement('td');
+                minCell.className = 'temp-min';
+                minCell.textContent = formatTemp(day.temp_min);
+                row.appendChild(minCell);
+
+                const maxCell = document.createElement('td');
+                maxCell.className = 'temp-max';
+                maxCell.textContent = formatTemp(day.temp_max);
+                row.appendChild(maxCell);
+
+                const precipCell = document.createElement('td');
+                precipCell.className = 'precip' + (day.precipitation === 0 ? ' zero' : '');
+                precipCell.textContent = formatPrecip(day.precipitation);
+                row.appendChild(precipCell);
+
+                forecastBodyEl.appendChild(row);
+            }
+
+            reportEl.classList.add('visible');
+            uploadArea.style.display = 'none';
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+
+            const options = {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            };
+            return date.toLocaleDateString('ru-RU', options);
+        }
+
+        function formatTemp(value) {
+            if (value === null || value === undefined) return '—';
+            return `${value}°C`;
+        }
+
+        function formatPrecip(value) {
+            if (value === null || value === undefined) return '—';
+            if (value === 0) return '0 мм';
+            return `${value} мм`;
+        }
+
+        function showError(message) {
+            errorEl.textContent = `❌ ${message}`;
+            errorEl.classList.add('visible');
+            reportEl.classList.remove('visible');
+        }
+
+        function hideError() {
+            errorEl.classList.remove('visible');
+        }
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            handleFile(file);
+        });
+
+        uploadArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = event.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        loadAnotherBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            reportEl.classList.remove('visible');
+            uploadArea.style.display = 'block';
+            currentReport = null;
+        });
+
+        downloadJsonBtn.addEventListener('click', () => {
+            if (!currentReport) return;
+            const blob = new Blob([JSON.stringify(currentReport, null, 2)], {
+                type: 'application/json',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentReport.city}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
