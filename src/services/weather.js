@@ -1,8 +1,7 @@
-import { geocodeCity, getWeatherForecast } from '../api/weatherApi.js';
-import { getCachedReport, isReportCacheValid } from '../storage/cache.js';
+import { geocodeCity, getWeatherForecast } from "../api/weatherApi.js";
+import { getCachedReport, isReportCacheValid } from "../storage/cache.js";
 
 async function getCityWeather(city, days, noCache) {
-
   if (!noCache && (await isReportCacheValid(city))) {
     const cached = await getCachedReport(city);
     if (cached) {
@@ -10,7 +9,11 @@ async function getCityWeather(city, days, noCache) {
     }
   }
   const location = await geocodeCity(city);
-  const forecast = await getWeatherForecast(location.latitude, location.longitude, days);
+  const forecast = await getWeatherForecast(
+    location.latitude,
+    location.longitude,
+    days,
+  );
 
   return {
     city: location.name,
@@ -22,12 +25,11 @@ async function getCityWeather(city, days, noCache) {
   };
 }
 
-
 export async function getWeatherDigest(cities, days, noCache) {
-  const promises = cities.map(city =>
+  const promises = cities.map((city) =>
     getCityWeather(city, days, noCache)
-      .then(result => ({ status: 'fulfilled', value: result }))
-      .catch(error => ({ status: 'rejected', reason: error.message }))
+      .then((result) => ({ status: "fulfilled", value: result }))
+      .catch((error) => ({ status: "rejected", reason: error.message })),
   );
 
   return await Promise.all(promises);
